@@ -409,7 +409,406 @@ After selecting a block, Adafruit IO prompts you to choose a feed. Feeds can als
 
 
 	
+Do the same with Humidity and the LED switch so that you can monitor simultaneously. 
 
+![image](https://user-images.githubusercontent.com/132896743/236800169-468b906d-ba25-4181-89a6-3ecb360957ba.png)
+![image](https://user-images.githubusercontent.com/132896743/236800198-9abd8840-15b1-42bb-9be9-df3c63ecd6b5.png)
+
+To fill the blocks with data, you need your personal username and key. To obtain both information, go back to the homepage and press Adafruit IO key. A window will appear that displays your username and key. Grab a pen and paper and write them down. 
+
+
+![image](https://user-images.githubusercontent.com/132896743/236800257-41860be3-9510-4fcb-84cd-14194d9a946e.png)
+
+
+![image](https://user-images.githubusercontent.com/132896743/236800283-a6f3799e-1d51-409c-9da4-6cf021d36636.png)
+
+
+Code: 
+#include <ESP8266WiFi.h> 
+#include "Adafruit_MQTT.h" 
+#include "Adafruit_MQTT_Client.h" 
+#include <DHT.h> 
+ 
+#define DHTPin D5 
+#define DHTType DHT22 DHT dht(DHTPin, DHTType); 
+float t,h; 
+ 
+#define WLAN_SSID "PLDTHOMEFIBR22218" 
+#define WLAN_PASS "PLDTWIFI29SKA" 
+ 
+#define AIO_SERVER "io.adafruit.com" 
+#define AIO_SERVERPORT 1883 
+#define AIO_USERNAME "jinalbhagat" 
+#define AIO_KEY "aio_WOPW54bbyKB0tzfIO33D6WFpynGq" 
+ 
+ 
+WiFiClient client; 
+Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO_KEY); 
+ 
+Adafruit_MQTT_Publish Temperature = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Temperature"); 
+ 
+Adafruit_MQTT_Publish Humidity =Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Humidity"); 
+ 
+Adafruit_MQTT_Subscribe LED = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/LED"); 
+ 
+void 
+MQTT_connect(); 
+void setup() { 
+Serial.begin(115 200); 
+delay(10); 
+pinMode(D7, OUTPUT); 
+dht.begin(); 
+delay(10); 
+Serial.println();  
+Serial.println();  
+Serial.print("Connecting to ");  
+Serial.println(WLAN_SSID); 
+WiFi.begin(WLAN_SSID, WLAN_PASS); 
+while (WiFi.status() != WL_CONNECTED) { 
+delay(500); 
+Serial.print("."); 
+} 
+Serial.println(); 
+Serial.println("WiFi connected"); 
+Serial.println("IP address: ");  
+Serial.println(WiFi.localIP());  
+mqtt.subscribe(&LED); 
+} 
+
+
+void loop() { 
+MQTT_connect(); 
+Adafruit_MQTT_Subscribe *subscription; 
+while ((subscription = mqtt.readSubscription(5000))) { 
+if (subscription == &LED) { 
+Serial.print(F("Got:”)); 
+String ledstatus = (char *)LED.lastread; 
+if (ledstatus == "ON") { 
+digitalWrite(D7, HIGH); 
+Serial.println(ledstatus); 
+} 
+else if (ledstatus == "OFF") { 
+digitalWrite(D7, LOW); 
+Serial.println(ledstatus); 
+} 
+} 
+} 
+t = dht.readTemperature();  
+h = dht.readHumidity(); 
+if (! Temperature.publish(t)) { 
+Serial.println(F("Temperature Failed")); 
+} 
+else { 
+Serial.println(F("Temperature OK!")); 
+} 
+if (! Humidity.publish(h)) { 
+Serial.println(F("Humidity Failed")); 
+} 
+else { 
+Serial.println(F("Humidity OK!")); 
+} 
+} 
+void MQTT_connect() {   
+int8_t ret; 
+if (mqtt.connected()) { 
+return; 
+} 
+Serial.print("Connecting to MQTT... "); 
+uint8_t retries = 3; 
+while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected 
+Serial.println(mqtt.connectErrorString(ret)); 
+Serial.println("Retrying MQTT connection in 5 seconds..."); 
+mqtt.disconnect(); delay(5000); // wait 5 seconds retries--; 
+if (retries == 0) { 
+// basically die and wait for WDT to reset me while (1); 
+} 
+} 
+Serial.println("MQTT Connected!"); 
+}
+
+
+
+
+
+![image](https://user-images.githubusercontent.com/132896743/236800362-9dca4c41-88dc-4814-bc42-3f2a3d27374e.png)
+
+![image](https://user-images.githubusercontent.com/132896743/236800373-4653ebb8-e1d8-4863-aa0d-22e4764056cb.png)
+
+
+![image](https://user-images.githubusercontent.com/132896743/236800385-bee39878-a8bf-43dd-8061-a439535fc0a1.png)
+
+
+
+
+
+
+Practical 7
+AIM: Study and Setup Raspberry Pi board.
+
+![image](https://user-images.githubusercontent.com/132896743/236800433-033e115b-3e5c-4e59-b838-130a436c9b42.png)
+
+
+
+What is a Raspberry Pi? 
+Raspberry Pi is the name of a series of single-board computers made by the Raspberry Pi Foundation, a UK charity that aims to educate people in computing and create easier access to computing education. 
+The Raspberry Pi launched in 2012, and there have been several iterations and variations released since then. The original Pi had a single-core 700MHz CPU and just 256MB RAM, and the latest model has a quad-core CPU clocking in at over 1.5GHz, and 4GB RAM. The price point for Raspberry Pi has always been under $100 (usually around $35 USD), most notably the Pi Zero, which costs just $5. All over the world, people use the Raspberry Pi to learn programming skills, build hardware projects, do home automation, implement Kubernetes clusters and Edge computing, and even use them in industrial applications. 
+The Raspberry Pi is a very cheap computer that runs Linux, but it also provides a set of GPIO (general purpose input/output) pins, allowing you to control electronic components for physical computing and explore the Internet of Things (IoT). 
+What Raspberry Pi models have been released? 
+There have been many generations of the Raspberry Pi line: from Pi 
+1 to 4, and even a Pi 400. There has generally been a Model A and a Model B of most generations. Model A has been a less expensive variant, and tends to have reduced RAM and fewer ports (such as USB and Ethernet). The Pi Zero is a spinoff of the original (Pi 1) generation, made even smaller and cheaper. Here's the lineup so far: 
+•	Pi 1 Model B (2012) 
+•	Pi 1 Model A (2013) 
+•	Pi 1 Model B+ (2014) 
+•	Pi 1 Model A+ (2014) 
+•	Pi 2 Model B (2015) 
+•	Pi Zero (2015) 
+•	Pi 3 Model B (2016) 
+•	Pi Zero W (2017) 
+•	Pi 3 Model B+ (2018) 
+•	Pi 3 Model A+ (2019) 
+•	Pi 4 Model A (2019) 
+•	Pi 4Model B (2020) 
+•	Pi 400 (2021) 
+ 
+What can you do with a Raspberry Pi? 
+Some people buy a Raspberry Pi to learn to code, and people who can already code use the Pi to learn to code electronics for physical projects. The Raspberry Pi can open opportunities for you to create your own home automation projects, which is popular among people in the open-source community because it puts you in control, rather than using a proprietary closed system. 
+
+
+
+
+
+
+Practical 8
+AIM: Study and implementation of LED(s) Interfacing with raspberry pi.
+
+![image](https://user-images.githubusercontent.com/132896743/236800593-fa3f3e3c-7c03-423b-b8a5-20cd3f8b9da9.png)
+
+
+Code:
+void enable_sio(int pin) { 
+uint32_t *PIN_CTRL_REG = (uint32_t*)IO_BANK0_BASE + pin * 2 + 1; 
+*PIN_CTRL_REG = 5; // 5 = SIO function 
+} 
+
+void setup() { 
+// Enable the SIO function for pins GP0 to GP7 
+for (int i = 0; i < 16; i++) { 
+enable_sio(i); 
+} 
+// Enable output on pins GP0 to GP7: 
+// sio_hw->gpio_oe points to 0xd0000020 (GPIO_OE) sio_hw->gpio_oe = 
+0b111111111111111; 
+
+// Set initial pin pattern 
+// sio_hw->gpio_out points to 0xd0000010
+ 
+(GPIO_OUT) sio_hw->gpio_out = 0b1010101010101010; 
+} 
+
+
+void loop() { 
+//pattern 1 
+for (int i = 0; i < 20; i++) {
+ 	sio_hw->gpio_togl = 0b1111111111111111; 
+delay(420 - 20 * i); 
+} 
+//pattern 2 
+for (int i = 0; i < 16; i++) { 
+sio_hw->gpio_out = 65535 >> i;
+delay(300); 
+} 
+//pattern 3 
+for (int i = 0; i < 16; i++) { 
+sio_hw->gpio_out = (65535 >> i); 
+sio_hw->gpio_togl = 0b1111111111111111; 
+delay(300); 
+} 
+//pattern 4 
+for (int i = 0; i < 16; i++) {
+sio_hw->gpio_out = 1 << i; 
+delay(100); 
+} 
+//pattern 5 
+for (int i = 0; i < 16; i++) { 
+sio_hw->gpio_out = 32768 >> i; 
+delay(100); 
+} 
+//pattern 6 
+sio_hw->gpio_out = 65535; 
+for (int i = 0; i < 16; i++) 
+{ 
+sio_hw->gpio_togl = 0b1111111111111111; 
+delay(200); 
+} 
+//pattern 7 
+sio_hw->gpio_out = 65280; 
+for (int i = 0; i < 8; i++) { 
+sio_hw->gpio_togl = 0b1111111111111111; 
+delay(300); 
+} 
+//pattern 8 
+sio_hw->gpio_out = 61680; 
+for (int i = 0; i < 16; i++) { 
+sio_hw->gpio_togl = 0b1111111111111111; 
+delay(300); 
+} 
+//pattern 9 
+sio_hw->gpio_out = 52428; 
+for (int i = 0; i < 16; i++) { 
+sio_hw->gpio_togl = 0b1111111111111111; delay(300); 
+} 
+//pattern 10 
+sio_hw->gpio_out = 43690; 
+for (int i = 0; i < 16; i++) 
+{ 
+sio_hw->gpio_togl = 0b1111111111111111; delay(300); 
+} 
+}
+
+
+
+
+
+
+Practical 9
+AIM: Study of Node-red programming tool.
+
+Node-Red
+Node-RED is a programming tool that allows users to create visual programming flows for IoT and other applications. It was developed by IBM and is now an open-source project under the JS Foundation. Node-RED uses a web-based visual editor that allows users to drag and drop nodes onto a workspace and connect them with wires to create a flow.
+
+Each node represents a specific action or function, such as reading data from a sensor, performing a computation, or sending a message to another system. The nodes are grouped into categories based on their functionality, making it easy to find the right node for a specific task. Node-RED also supports the creation of custom nodes using JavaScript, allowing users to extend its capabilities.
+
+Node-RED has a built-in library of nodes that can be used to interact with a variety of IoT devices and services, such as MQTT, TCP, HTTP, and CoAP protocols, and popular cloud services like AWS and Azure. This makes it an ideal tool for building IoT applications that require data collection, processing, and transmission.
+
+Node-RED can be easily installed on a local machine or deployed on a cloud platform like IBM Cloud, AWS, or Microsoft Azure. It can also be integrated with other programming languages like Python, JavaScript, and Java.
+
+In summary, Node-RED is a visual programming tool that simplifies the development of IoT applications. It provides a user-friendly interface that allows users to create complex workflows without writing any code. It is easy to install, supports a wide range of IoT protocols and services, and can be extended using custom nodes.
+
+Node-RED has gained popularity in the IoT community due to its ease of use and flexibility. It has a large and active community of developers who contribute to the project by creating and sharing new nodes, providing support, and contributing to the documentation.
+
+One of the key features of Node-RED is its ability to quickly prototype and test IoT applications. With the visual editor, developers can create a working prototype of an application in a matter of minutes, allowing them to quickly validate their ideas and experiment with different approaches. This reduces development time and costs, making it an ideal tool for startups and small businesses.
+
+Another advantage of Node-RED is its ability to integrate with other tools and services. It can be used with popular messaging platforms like Slack and Telegram, as well as data visualization tools like Grafana and Tableau. This makes it easy to create end-to-end solutions that connect IoT devices, cloud services, and user interfaces.
+
+
+
+Practical 10
+AIM: Study and implementation of processing data from different sensors and visualize data on Node-red dashboard.
+
+Node-Red
+Node-RED is a programming tool that allows users to create visual programming flows for IoT and other applications. It was developed by IBM and is now an open-source project under the JS Foundation. Node-RED uses a web-based visual editor that allows users to drag and drop nodes onto a workspace and connect them with wires to create a flow.
+
+
+
+
+
+Practical 11
+AIM: Write a sketch that will upload data (like temperature, Light status, etc) on thingspeak cloud.
+
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ThingSpeak.h>
+
+// ThingSpeak channel details
+const char* ssid = "jio_4G";
+const char* password = "Mahek@247";
+const char* server = "api.thingspeak.com";
+const String apiKey = "AB12CDE34FG56HI78JK9LMN0OP12QR34";
+const unsigned long postingInterval = 10000; // 10 seconds between updates
+
+// Define the pins for the temperature and light sensors
+const int tempSensorPin = A0;
+const int lightSensorPin = A1;
+
+// Initialize the WiFi client and ThingSpeak client objects
+WiFiClient client;
+ThingSpeakClient thingSpeak(client);
+
+// Initialize the last update time
+unsigned long lastUpdate = 0;
+
+void setup() {
+  // Initialize serial communication
+  Serial.begin(9600);
+
+  // Connect to WiFi network
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+  Serial.println("Connected to WiFi");
+
+  // Initialize the ThingSpeak client
+  thingSpeak.begin(server, apiKey);
+}
+
+void loop() {
+  // Check if it's time to update ThingSpeak
+  if (millis() - lastUpdate > postingInterval) {
+    // Read the temperature and light sensor values
+    float temperature = analogRead(tempSensorPin) * 0.1; // Assuming 10mV/degree C conversion
+    int light = analogRead(lightSensorPin);
+
+    // Print the sensor values to the serial monitor
+    Serial.print("Temperature: ");
+    Serial.print(temperature);
+    Serial.println(" degrees C");
+    Serial.print("Light level: ");
+    Serial.println(light);
+
+    // Update ThingSpeak with the sensor values
+    ThingSpeak.setField(1, temperature);
+    ThingSpeak.setField(2, light);
+    int response = ThingSpeak.writeFields();
+
+    // Check if the update was successful
+    if (response == 200) {
+      Serial.println("Update successful");
+    } else {
+      Serial.print("Update failed with error code ");
+      Serial.println(response);
+    }
+
+    // Update the last update time
+    lastUpdate = millis();
+  }
+}
+
+Output:
+
+![image](https://user-images.githubusercontent.com/132896743/236800785-72f33db0-2cef-43e2-8b6e-e0ebe1f27a2e.png)
+
+
+Practical 12
+AIM: Case study on IoT Applications like - Home Automation: This home automation system based on IoT automates the functioning of household appliances over the Internet. 
+- Smart Agriculture System: This IoT-based system performs the routine agricultural tasks automatically and allows farmers to focus on more labor-intensive tasks. 
+- Smart Street light monitoring system: The of the major challenges related to street lights is that they are left on even during daylight hours or when there’s no one on the street. An IoT-powered street light monitoring system can help us handle this challenge. Besides, the system will also ensure consumption monitoring, low power consumption, and instant faulty light detection. 
+Implementation of mini projects on smart irrigation System, Smart dustbin, Intelligent Building, Smart harvesting, Smart Hospital, Smart classroom, Smart transportation/traffic, Smart Museum etc
+
+
+Case Study:
+One of the most significant advancements in technology has been the introduction of the Internet of Things (IoT). IoT has paved the way for various applications, including home automation, smart agriculture, smart street lights, and others. In this case study, we will delve into some of the popular IoT applications and their implementations.
+
+Home Automation:
+Home automation based on IoT is the automatic control of household appliances over the internet. The system uses a network of interconnected devices such as sensors, controllers, and actuators to control and monitor the appliances. The system enables homeowners to control their home’s temperature, lighting, security, and other aspects remotely. For instance, they can turn on the lights, adjust the thermostat, or check their security cameras from their smartphone or tablet.
+Home automation based on IoT has revolutionized the way we interact with our homes. With the help of smart devices and sensors, homeowners can now control their homes' appliances, lighting, temperature, and security from anywhere in the world, using their smartphones or other smart devices.
+
+The IoT-based home automation system consists of a network of devices such as sensors, controllers, and actuators. These devices are connected through a wireless network, enabling them to communicate with each other and with the homeowner's smartphone or tablet.
+
+Some of the key features of home automation based on IoT are:
+
+•	Smart Lighting: With the help of smart light bulbs, homeowners can control the lighting in their homes remotely. They can turn on or off the lights, adjust the brightness, and even change the color of the light.
+
+•	Temperature Control: Smart thermostats enable homeowners to control the temperature of their homes remotely. They can adjust the thermostat to maintain a comfortable temperature, even when they are not at home.
+
+•	Security: Home automation based on IoT also includes smart security systems that enable homeowners to monitor their homes remotely. They can view live footage from their security cameras, receive alerts when there is any suspicious activity, and even remotely lock or unlock their doors.
+
+•	Entertainment: IoT-based home automation systems also allow homeowners to control their entertainment systems remotely. They can control their TV, music systems, and even their gaming consoles using their smartphones or other smart devices.
+
+•	Energy Efficiency: IoT-based home automation systems can help homeowners save energy by automatically turning off appliances when they are not in use. They can also monitor their energy consumption and adjust their usage accordingly.
+
+Overall, home automation based on IoT offers homeowners a convenient and efficient way to control their homes. It not only makes life more comfortable but also helps save time, energy, and resources.
 
 
 
