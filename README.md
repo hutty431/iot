@@ -671,6 +671,7 @@ sio_hw->gpio_togl = 0b1111111111111111; delay(300);
 
 
 Practical 9
+
 AIM: Study of Node-red programming tool.
 
 Node-Red
@@ -693,6 +694,7 @@ Another advantage of Node-RED is its ability to integrate with other tools and s
 
 
 Practical 10
+
 AIM: Study and implementation of processing data from different sensors and visualize data on Node-red dashboard.
 
 Node-Red
@@ -703,6 +705,7 @@ Node-RED is a programming tool that allows users to create visual programming fl
 
 
 Practical 11
+
 AIM: Write a sketch that will upload data (like temperature, Light status, etc) on thingspeak cloud.
 
 #include <ESP8266WiFi.h>
@@ -781,6 +784,7 @@ Output:
 
 
 Practical 12
+
 AIM: Case study on IoT Applications like - Home Automation: This home automation system based on IoT automates the functioning of household appliances over the Internet. 
 - Smart Agriculture System: This IoT-based system performs the routine agricultural tasks automatically and allows farmers to focus on more labor-intensive tasks. 
 - Smart Street light monitoring system: The of the major challenges related to street lights is that they are left on even during daylight hours or when there’s no one on the street. An IoT-powered street light monitoring system can help us handle this challenge. Besides, the system will also ensure consumption monitoring, low power consumption, and instant faulty light detection. 
@@ -809,9 +813,5 @@ Some of the key features of home automation based on IoT are:
 •	Energy Efficiency: IoT-based home automation systems can help homeowners save energy by automatically turning off appliances when they are not in use. They can also monitor their energy consumption and adjust their usage accordingly.
 
 Overall, home automation based on IoT offers homeowners a convenient and efficient way to control their homes. It not only makes life more comfortable but also helps save time, energy, and resources.
-
-
-
-
 
 
