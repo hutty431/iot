@@ -343,6 +343,73 @@ Output:
 
 
 
+Practical 6
+AIM: Controlling Appliances using NodeMCU MQTT over the Internet. (Adafruit Cloud).
+
+MQTT 
+MQTT, also known as Message Queuing Telemetry Transport, is a protocol that uses a publish and subscribe paradigm. It is simple, lightweight, and it gives you the luxury to stay connected to your devices the entire time. 
+Moreover, MQTT works on top of any wireless technology. You can use it with TCP/IP, Zigbee, Bluetooth, and many more. You name it. 
+Before we proceed, you need to learn these terms first: 
+•	Broker – The server that distributes the data to the interested clients. 
+•	Client – A device that sends or receives information via the broker. 
+•	Topic – A feed of data that a broker manages. Clients can publish, subscribe, or do both to a topic. 
+•	Publish – A client sends information to a topic. 
+•	Subscribe – A client tells the broker which topics it is interested in. 
+•	QoS – QoS stands for Quality of Service. It represents the level of connection between a client and a broker. 
+o	0, also known as at most once, is the lowest QOS. The broker does not acknowledge the delivery and the client does not retransmit. 
+o	1, also known as at least once, the client continuously transmits the data until an acknowledgment from the broker is received. 
+o	2, also known as exactly once, is the highest QOS. It is the safest but also the slowest level. It uses a 4-way handshake method. 
+
+How MQTT Works 
+
+
+![image](https://user-images.githubusercontent.com/132896743/236799426-43d300f0-8cc1-404e-b233-b80b45cbc3a3.png)
+
+
+
+To demonstrate, suppose we have 3 clients and Adafruit IO as a broker. Client 1 is connected to a temperature and humidity sensor, Client 2 is connected to a Humidifier, and Client 3 is connected to an Air Conditioner. 
+
+
+In this case, the topics are Room Temperature and Humidity and Aircon Relay. Client 1 publishes data into Room Temperature and Humidity. Since Client 2 and Client 3 are subscribed to the topic, the broker distributes the data to them. Client 2 opens the humidifier when the topic tells that the air is dry while Client 3 opens the Air Conditioner when the topic tells that it is warm. Moreover, Client 3 is subscribed to the topic of Aircon Relay as well. When the topic tells that the aircon is on, Client 2 opens the humidifier. 
+A broker just acts as a tollway for data. It doesn’t send commands to the clients. It only directs the data the client is interested in. 
+Meanwhile, clients aren’t really connected to anything other than the broker. Clients can go to deep sleep or completely shut down to conserve power without affecting the connection of the MQTT system. 
+Now that we understand the theory, let’s proceed by setting up an MQTT broker on Adafruit IO. 
+
+Setting up MQTT on Adafruit IO 
+First, go to https://io.adafruit.com/ and create an account. Once logged in, go to the home page. Under Actions, select Create a New Dashboard. 
+
+![image](https://user-images.githubusercontent.com/132896743/236799521-3244f1cd-2126-4235-9688-de7c713b3000.png)
+
+
+Then, click create after giving the dashboard a name and a short description. 
+
+
+![image](https://user-images.githubusercontent.com/132896743/236799592-a074c053-1173-4ffb-9f4e-487541ebd69a.png)
+
+
+Next, go to your new Dashboard. 
+
+
+![image](https://user-images.githubusercontent.com/132896743/236799656-6516b115-4602-4bef-b6d7-94bd70f24d47.png)
+
+
+
+As you can see, the dashboard is still empty. You should populate it first by creating a new block. In order to do that, press the blue plus button on the right side of the dashboard. 
+ 
+Blocks are switches, buttons, levers, gauges, and more visualization techniques that represent and react to your data. For our sample project, we need 2 gauges to display the room’s temperature and humidity and a switch to toggle an LED. 
+After selecting a block, Adafruit IO prompts you to choose a feed. Feeds can also be called MQTT topics. We need 3 feeds to hold the temperature and humidity values of the DHT sensor, and the status of the LED. Create a feed using the create button on the right. 
+
+![image](https://user-images.githubusercontent.com/132896743/236799737-ea70e4f4-f48c-4bca-857b-56b8fce40909.png)
+
+
+	Next, configure the block settings as shown below. 
+	
+![image](https://user-images.githubusercontent.com/132896743/236799799-20589ccb-0273-460b-8cd7-35937580e5a2.png)
+
+
+
+	
+
 
 
 
